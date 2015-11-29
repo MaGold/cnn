@@ -126,7 +126,7 @@ def cifar10(onehot=True):
         dict = pickle.load(f, encoding="latin1")
         X[(i-1) * 10000: i * 10000,:] = dict['data']
         Y[(i-1) * 10000: i * 10000,:] = np.array(dict['labels']).reshape((10000,1)).astype(int)
-        Y = one_hot(Y, 10)
+    Y = one_hot(Y, 10)
     X = X.reshape(50000, 3, 32, 32)
 
     f = open(os.path.join(path, "test_batch"), 'rb')
