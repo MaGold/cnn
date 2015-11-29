@@ -1,3 +1,7 @@
 # cnn-mnist
 
-Based on [this](https://github.com/Newmu/Theano-Tutorials/blob/master/5_convolutional_net.py)
+Based on [this](https://github.com/Newmu/Theano-Tutorials/blob/master/5_convolutional_net.py).
+
+Add folder "convfilters".
+
+MNIST data should be in "data-mnist" folder.
