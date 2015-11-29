@@ -52,7 +52,6 @@ def RMSprop(cost, params, lr=0.001, rho=0.9, epsilon=1e-6):
 
 def model(X, filter_params, fc_params, p_drop_conv, p_drop_hidden):
     inp = X
-    outshp = 28
     params = []
     for f in filter_params:
         outa = rectify(conv2d(inp, f, border_mode='valid'))
@@ -60,11 +59,9 @@ def model(X, filter_params, fc_params, p_drop_conv, p_drop_hidden):
         outc = dropout(outb, p_drop_conv)
 
         f_shp = f.get_value().shape
-        outshp = (outshp - f_shp[2] + 1)/2
         inp = outc
 
     inp = T.flatten(inp, outdim=2)
-    outshp = filter_params[-1].get_value().shape[0] * outshp * outshp
     for w in fc_params[:-1]:
         out = rectify(T.dot(inp, w))
         out = dropout(out, p_drop_hidden)
