@@ -130,7 +130,7 @@ for i in range(10000):
         print(cost)
         #write(str(i) + ": " + str(start) + ": " + str(cost) + "\n")
         #    if end % 3072 == 0:
-    Plots.plot_color_filters(params[0].get_value(), i, "")
+    Plots.plot_filters(params[0].get_value(), channels, i, "")
     print("Predict........")
     print(np.mean(np.argmax(teY, axis=1) == predict(teX)))
     write(str(i) + ": " + str(np.mean(np.argmax(teY, axis=1) == predict(teX))))

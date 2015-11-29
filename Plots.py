@@ -10,8 +10,14 @@ import matplotlib.pyplot as plt
 
 import matplotlib.gridspec as gridspec
 
+#---------------------------------------------------------------------
+def plot_filters(w, channels, idx, title):
+    if channels == 1:
+        plot_grey_filters(w, idx, title)
+    elif channels == 3:
+        plot_color_filters(w, idx, title)
 
-def plot_filters(x, idx, title=""):
+def plot_grey_filters(x, idx, title=""):
     num_filters = x.shape[0]
     numrows = 10
     numcols = int(np.ceil(num_filters/10))
