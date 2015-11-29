@@ -3,8 +3,7 @@ import os
 import gzip
 import pickle
 
-datasets_dir = 'data-mnist/'
-datasets_dir = "data-mnist/mnist.pkl.gz"
+
 def one_hot(x,n):
 	if type(x) == list:
 		x = np.array(x)
@@ -12,32 +11,17 @@ def one_hot(x,n):
 	o_h = np.zeros((len(x),n))
 	o_h[np.arange(len(x)),x] = 1
 	return o_h
+
+
+#def load_data(dataset):
 def mnist(ntrain=60000,ntest=10000,onehot=True):
     ''' Loads the dataset
 
     :type dataset: string
     :param dataset: the path to the dataset (here MNIST)
     '''
-    dataset = datasets_dir
-    # Download the MNIST dataset if it is not present
-    data_dir, data_file = os.path.split(dataset)
-    if data_dir == "" and not os.path.isfile(dataset):
-        # Check if dataset is in the data directory.
-        new_path = os.path.join(os.path.split(__file__)[0],
-                                "..", "data", dataset)
-        if os.path.isfile(new_path) or data_file == 'mnist.pkl.gz':
-            dataset = new_path
-
-    if (not os.path.isfile(dataset)) and data_file == 'mnist.pkl.gz':
-        import urllib
-        origin = 'http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz'
-        print('Downloading data from %s' % origin)
-        urllib.urlretrieve(origin, dataset)
-
-    print('... loading data')
-
-    # Load the dataset
-    f = gzip.open(dataset, 'rb')
+    path = "data/data-mnist/mnist.pkl.gz"
+    f = gzip.open(path, 'rb')
     train_set, valid_set, test_set = pickle.load(f, encoding='latin1')
     f.close()
     # train_set, valid_set, test_set format: tuple(input, target)
@@ -57,6 +41,104 @@ def mnist(ntrain=60000,ntest=10000,onehot=True):
     trX = train_set[0]
     teX = valid_set[0]
     print(trX.shape)
-    return trX,teX,trY,teY
+    trX = trX.reshape(trX.shape[0], 1, 28, 28)
+    teX = teX.reshape(teX.shape[0], 1, 28, 28)
+    return trX, trY, teX, teY, 1, 28
 
 
+
+
+import scipy
+import theano
+def caltech(onehot=True, num_imgs_to_load=1000):
+    path = "data-caltech/101_ObjectCategories/"
+
+    # load file names
+    fnames = []
+    cats = {}
+    for path, subdirs, files in os.walk(path):
+        if len(files) > 0:
+            cats[path] = []
+            #print(path)
+        for name in files:
+            fnames.append(os.path.join(path, name))
+            cats[path].append(os.path.join(path, name))
+
+
+    # load images
+    i=0
+    for k in cats.keys():
+        cats[i] = cats[k]
+        del cats[k]
+        i += 1
+    #print(cats.keys())
+    
+    pics = []
+    imgshape = []
+    #rand = np.array(fnames)
+    count = 0
+    # for img in fnames:
+    #     if count >= num_imgs_to_load:
+    #         break
+    #     count += 1
+    #     pic = scipy.misc.imread(img)
+    #     if len(pic.shape)==3:
+    #         if pic.shape[0] >= 220 and pic.shape[1] >= 220:
+    #             pic = pic[20:20+200, 20:20+200, :]
+    #             pic = scipy.misc.imresize(pic, size=(60,60))
+    #             imgshape = pic.shape
+    #             pics.append(pic)
+    #             labels.append()
+    
+    labels = []
+    for label, vals in cats.items():
+        for val in vals:
+            if count >= num_imgs_to_load:
+                break
+            count += 1
+            pic = scipy.misc.imread(val)
+            if len(pic.shape)==3:
+                if pic.shape[0] >= 220 and pic.shape[1] >= 220:
+                    pic = pic[20:20+200, 20:20+200, :]
+                    pic = scipy.misc.imresize(pic, size=(60,60))
+                    imgshape = pic.shape
+                    pics.append(pic)
+                    labels.append(label)
+    
+        
+    X = np.array(pics)
+    Y = np.array(labels)
+    print(X.shape)
+    print(Y.shape)
+    if onehot:
+        Y = one_hot(Y, i)
+    print(Y.shape)
+    return X, Y
+
+# data will be reshaped as (num_imgs, num_channels, height, width)
+# in this case:            (50000, 3, 32, 32)
+def cifar10(onehot=True):
+    path = "data/data-cifar10"
+    X = np.zeros((50000, 3072))
+    Y = np.zeros((50000, 1)).astype(int)
+    for i in range(1,6):
+        f = open(os.path.join(path, "data_batch_" + str(i)), 'rb')
+        dict = pickle.load(f, encoding="latin1")
+        X[(i-1) * 10000: i * 10000,:] = dict['data']
+        Y[(i-1) * 10000: i * 10000,:] = np.array(dict['labels']).reshape((10000,1)).astype(int)
+        Y = one_hot(Y, 10)
+    X = X.reshape(50000, 3, 32, 32)
+
+    f = open(os.path.join(path, "test_batch"), 'rb')
+    dict = pickle.load(f, encoding="latin1")
+    X_test = dict['data'].reshape(10000, 3, 32, 32)
+    Y_test = np.array(dict['labels']).reshape((10000,1)).astype(int)
+    Y_test = one_hot(Y_test, 10)
+    return X, Y, X_test, Y_test, 3, 32
+
+
+def load_data(dataset):
+    if dataset == "mnist":
+        return mnist()
+    if dataset == "cifar10":
+        return cifar10()
